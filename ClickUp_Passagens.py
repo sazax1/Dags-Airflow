@@ -15,7 +15,7 @@ def fetch_and_process_clickup_data():
     
     def convert_timestamp(timestamp_str):
         if timestamp_str is not None:
-            timestamp = int(timestamp_str) / 1000  # Convertendo para segundos
+            timestamp = int(timestamp_str) / 1000 
             dt_utc = datetime.utcfromtimestamp(timestamp).replace(tzinfo=timezone.utc)
             dt_gmt4 = dt_utc.astimezone(timezone(timedelta(hours=-4)))
             return dt_gmt4.strftime("%Y-%m-%d %H:%M:%S")
@@ -24,7 +24,7 @@ def fetch_and_process_clickup_data():
     logging.info("Iniciando a coleta de dados do ClickUp")
 
     api_key = Variable.get("clickup_api_key")
-    url = "https://api.clickup.com/api/v2/list/900701005672/task"
+    url = "URL_CLICKUP"
     params = {
         "archived": "false",
         "include_markdown_description": "true",
