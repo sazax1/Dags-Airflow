@@ -6,11 +6,9 @@ from pymongo import MongoClient
 from airflow.hooks.base_hook import BaseHook
 import psycopg2
 
-# Função para transferência de dados dos bots
 def transfer_data_bots():
     logging.info("Iniciando a transferência de dados dos bots...")
 
-    # Conexão MongoDB
     try:
         logging.info("Conectando ao MongoDB...")
         mongo_conn = BaseHook.get_connection('mongo_default')
@@ -22,7 +20,6 @@ def transfer_data_bots():
         logging.error(f"Erro ao conectar ao MongoDB: {e}")
         return
 
-    # Conexão PostgreSQL
     try:
         logging.info("Conectando ao PostgreSQL...")
         postgres_conn = BaseHook.get_connection('postgres_default')
@@ -33,7 +30,6 @@ def transfer_data_bots():
         logging.error(f"Erro ao conectar ao PostgreSQL: {e}")
         return
 
-    # Inserção no PostgreSQL
     try:
         bots = mongo_collection.find()
         for bot in bots:
@@ -51,11 +47,9 @@ def transfer_data_bots():
         mongo_client.close()
         logging.info("Conexões fechadas.")
 
-# Função para transferência de dados dos leads
 def transfer_data_leads():
     logging.info("Iniciando a transferência de dados dos leads...")
 
-    # Conexão MongoDB
     try:
         logging.info("Conectando ao MongoDB...")
         mongo_conn = BaseHook.get_connection('mongo_default')
@@ -67,7 +61,6 @@ def transfer_data_leads():
         logging.error(f"Erro ao conectar ao MongoDB: {e}")
         return
 
-    # Agregação no MongoDB
     pipeline = [
         {
             "$group": {
@@ -87,7 +80,6 @@ def transfer_data_leads():
     results = list(aggregation_results)
     logging.info(f"Agregação concluída com {len(results)} resultados.")
 
-    # Conexão PostgreSQL
     try:
         logging.info("Conectando ao PostgreSQL...")
         postgres_conn = BaseHook.get_connection('postgres_default')
@@ -98,7 +90,6 @@ def transfer_data_leads():
         logging.error(f"Erro ao conectar ao PostgreSQL: {e}")
         return
 
-    # Inserção no PostgreSQL
     try:
         for result in results:
             bot = result["_id"]["bot"]
@@ -129,7 +120,6 @@ def transfer_data_leads():
         mongo_client.close()
         logging.info("Conexões fechadas.")
 
-# Definir os argumentos padrões da DAG
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -140,7 +130,6 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-# Definir a DAG
 dag = DAG(
     'mongo_to_postgres_transfer',
     default_args=default_args,
@@ -148,7 +137,6 @@ dag = DAG(
     schedule_interval=timedelta(hours=1),
 )
 
-# Definir as tarefas
 transfer_data_bots_task = PythonOperator(
     task_id='transfer_data_bots',
     python_callable=transfer_data_bots,
@@ -161,5 +149,4 @@ transfer_data_leads_task = PythonOperator(
     dag=dag,
 )
 
-# Configuração da DAG
 transfer_data_bots_task >> transfer_data_leads_task
